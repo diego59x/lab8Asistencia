@@ -45,13 +45,13 @@
         }
       #message  { background: white; max-width: 360px; margin: 100px auto 16px; padding: 32px 24px; border-radius: 3px; }
       #message h2 { color: #ffa100; font-weight: bold; font-size: 16px; margin: 0 0 8px; }
-      #message a, button { display: block; text-align: center; background: #039be5; text-transform: uppercase; text-decoration: none; color: white; padding: 16px; border-radius: 4px; }
+      #message a { display: block; text-align: center; background: #039be5; text-transform: uppercase; text-decoration: none; color: white; padding: 16px; border-radius: 4px; }
        #load { color: rgba(0,0,0,0.4); text-align: center; font-size: 13px; }
       @media (max-width: 600px) {
         body, #message { margin-top: 0; background: white; box-shadow: none; }
         body { border-top: 16px solid #ffa100; }
       }
-      #message h1 { font-size: 22px; font-weight: 300; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
+      #message h1 { font-size: 32px; font-weight: 300; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
       #message p { line-height: 140%; margin: 16px 0 24px; font-size: 14px; }
       #message, #message a { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
       
@@ -59,11 +59,13 @@
   </head>
   <body>
     <div id="message">
-      <h1 id="persona">Bienvenido</h1>
-      <button onClick="login()">Login with google</button>
-      <a  href="./asistencia.html" >Tomar asistencia</a>
+      <h1>Bienvenido</h1>
       <ul id="usuarios">
+          
       </ul>
+      <h2>Apacha F5 para ver los cambios</h2>
+      <a  href="./index.html" >Atras</a>
+      
     </div>
     <script>
       document.addEventListener('DOMContentLoaded', function() {
@@ -71,17 +73,27 @@
         try {
           let app = firebase.app();
           
+          const db = firebase.firestore()
 
-          window.login = () => {
-            const provider = new firebase.auth.GoogleAuthProvider()
-            firebase.auth().signInWithPopup(provider).then(response => {
-              document.getElementById('persona').innerHTML += (
-              `<h1>${response.additionalUserInfo.profile.given_name}</h1>`
+          const estudiantes = db.collection("Estudiantes").get().then((response) => {
+            response.forEach((doc) => {
+              document.getElementById('usuarios').innerHTML += (
+              `<li onclick="cameToClass(${doc.id})">${doc.data().Nombre} ${doc.data().asistencia ? '&check;' : '&times;'}</li>`
               )
+              });
+          });
+
+          window.cameToClass = (a) => {
+            const db = firebase.firestore()
+            const estudiante = db.collection("Estudiantes").doc(a.toString())
+            let asistio = true
+            estudiante.get().then((response) => {
+                console.log('aver')
+                asistio = !response.data().asistencia
+                console.log(asistio)
+                estudiante.update({ asistencia: asistio })  
             })
           }
-
-          
         } catch (e) {
           console.error(e);
           loadEl.textContent = 'Error loading the Firebase SDK, check the console.';
